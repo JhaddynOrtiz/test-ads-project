@@ -80,11 +80,12 @@ export class AppComponent implements OnInit, OnDestroy {
   private async initMap(lat: number, lon: number): Promise<void> {
     if (!this.mapContainer?.nativeElement) return;
 
-    // Importamos Leaflet dinámicamente
-    const L = await import('leaflet');
-
     try {
-      // 1. Inicializar el mapa
+      // 1. Importamos el módulo
+      const leafletModule = await import('leaflet');
+      // 2. Extraemos el objeto real (compatible con local y producción)
+      const L = leafletModule.default || leafletModule;
+
       this.map = L.map(this.mapContainer.nativeElement).setView([lat, lon], 13);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -92,8 +93,6 @@ export class AppComponent implements OnInit, OnDestroy {
         attribution: '© OpenStreetMap'
       }).addTo(this.map);
 
-      // 2. Definir el icono como un objeto de configuración directo
-      // Esto evita llamar a L.icon() que es lo que falla en producción
       const myIcon = L.icon({
         iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -104,7 +103,6 @@ export class AppComponent implements OnInit, OnDestroy {
         shadowSize: [41, 41]
       });
 
-      // 3. Crear el marcador pasando el icono explícitamente
       this.marker = L.marker([lat, lon], { icon: myIcon }).addTo(this.map)
         .bindPopup('Ubicación capturada')
         .openPopup();
@@ -117,9 +115,18 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private async updateExistingMap(lat: number, lon: number): Promise<void> {
     if (!this.map) return;
-    const L = await import('leaflet');
-    const newLatLng = new L.LatLng(lat, lon);
-    this.map.setView(newLatLng, 13);
-    if (this.marker) this.marker.setLatLng(newLatLng);
+    
+    try {
+      // Aplicamos la misma corrección aquí
+      const leafletModule = await import('leaflet');
+      const L = leafletModule.default || leafletModule;
+      
+      const newLatLng = new L.LatLng(lat, lon);
+      this.map.setView(newLatLng, 13);
+      if (this.marker) this.marker.setLatLng(newLatLng);
+    } catch (error) {
+      console.error('Error al actualizar Leaflet:', error);
+    }
   }
+
 }
