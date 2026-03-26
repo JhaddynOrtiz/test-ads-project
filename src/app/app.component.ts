@@ -24,7 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   adsResult: AdsResult | null = null;
   private map: any; // Usamos any para evitar errores de tipo sin el import global
@@ -80,31 +80,39 @@ export class AppComponent implements OnInit, OnDestroy {
   private async initMap(lat: number, lon: number): Promise<void> {
     if (!this.mapContainer?.nativeElement) return;
 
-    // IMPORT DINÁMICO: Esto es lo que evita el error "window is not defined"
+    // Importamos Leaflet dinámicamente
     const L = await import('leaflet');
 
-    // FIX de Iconos para Producción
-    const iconDefault = L.icon({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    });
-    L.Marker.prototype.options.icon = iconDefault;
+    try {
+      // 1. Inicializar el mapa
+      this.map = L.map(this.mapContainer.nativeElement).setView([lat, lon], 13);
 
-    this.map = L.map(this.mapContainer.nativeElement).setView([lat, lon], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(this.map);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
+      // 2. Definir el icono como un objeto de configuración directo
+      // Esto evita llamar a L.icon() que es lo que falla en producción
+      const myIcon = L.icon({
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
 
-    this.marker = L.marker([lat, lon]).addTo(this.map)
-      .bindPopup('Ubicación capturada')
-      .openPopup();
+      // 3. Crear el marcador pasando el icono explícitamente
+      this.marker = L.marker([lat, lon], { icon: myIcon }).addTo(this.map)
+        .bindPopup('Ubicación capturada')
+        .openPopup();
+
+      console.log("Mapa cargado correctamente en producción.");
+    } catch (error) {
+      console.error('Error crítico en Leaflet:', error);
+    }
   }
 
   private async updateExistingMap(lat: number, lon: number): Promise<void> {
