@@ -1,8 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, Inject, PLATFORM_ID, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import type * as L from 'leaflet'; // Importamos solo los tipos para evitar que el código de Leaflet se ejecute en el servidor
+import * as L from 'leaflet';
 
-// Define interfaces para una mejor seguridad de tipos
 interface AdsData {
   latitude?: number;
   longitude?: number;
@@ -98,39 +97,38 @@ export class AppComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async initMap(lat: number, lon: number): Promise<void> {
-    console.log("Inicializando nueva instancia de mapa...");
-    // Verificamos que el contenedor del mapa exista en el DOM usando @ViewChild
-    if (!this.mapContainer?.nativeElement) {
-      console.error('Error: mapContainer no está disponible. Asegúrate de que el *ngIf haya renderizado el elemento.');
-      return;
-    }
+  private initMap(lat: number, lon: number): void {
+    if (!this.mapContainer?.nativeElement) return;
 
-    const L = await import('leaflet');
-    const iconDefault = L.icon({
-      iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
-      iconUrl: 'assets/leaflet/marker-icon.png',
-      shadowUrl: 'assets/leaflet/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      tooltipAnchor: [16, -28],
-      shadowSize: [41, 41]
-    });
-    L.Marker.prototype.options.icon = iconDefault;
     try {
-      // Asignamos la instancia del mapa a this.map
+      // 2. Configura los iconos ANTES de crear el mapa
+      // Esto evita el error "r.icon is not a function"
+      const iconDefault = L.icon({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        tooltipAnchor: [16, -28],
+        shadowSize: [41, 41]
+      });
+
+      // Asignamos el icono por defecto globalmente para Leaflet
+      L.Marker.prototype.options.icon = iconDefault;
+
+      // 3. Inicializa el mapa normalmente
       this.map = L.map(this.mapContainer.nativeElement).setView([lat, lon], 13);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        attribution: '© OpenStreetMap'
       }).addTo(this.map);
 
       this.marker = L.marker([lat, lon]).addTo(this.map)
         .bindPopup('Ubicación del data.')
         .openPopup();
-      console.log("Mapa inicializado exitosamente con marcador.");
+
     } catch (error) {
       console.error('Error al inicializar el mapa:', error);
     }
