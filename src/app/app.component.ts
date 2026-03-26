@@ -6,12 +6,10 @@ import type * as L from 'leaflet'; // Importamos solo los tipos para evitar que 
 interface AdsData {
   latitude?: number;
   longitude?: number;
-  longitud?: number; // Manejar posible error tipográfico
 }
 
 interface AdsResult {
   data?: AdsData;
-  // Añadir otras propiedades de adsResult si se conocen
 }
 
 @Component({
@@ -25,7 +23,7 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   title = 'test-ads';
   adsResult: AdsResult | null = null; // Tipado más específico
@@ -37,21 +35,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public get hasValidCoordinates(): boolean {
     const lat = this.adsResult?.data?.latitude;
-    const lon = this.adsResult?.data?.longitude ?? this.adsResult?.data?.longitud;
+    const lon = this.adsResult?.data?.longitude;
     return lat != null && lon != null;
   }
 
   private adsDataListener = (event: Event) => {
     const customEvent = event as CustomEvent;
     this.adsResult = customEvent.detail;
-    // Como el evento viene de `window`, está fuera de la zona de Angular.
-    // Necesitamos disparar manualmente la detección de cambios para actualizar la vista.
+
+    // Forzamos a Angular a reconocer el cambio
     this.cdr.detectChanges();
-    // Usamos Promise.resolve().then para asegurar que el DOM se haya actualizado
-    // después de la detección de cambios de Angular, antes de interactuar con el elemento #map.
-    Promise.resolve().then(() => {
+
+    // Esperamos un "tick" para que el [hidden] o la vista se actualicen
+    setTimeout(() => {
       this.updateMap();
-    });
+    }, 0);
   };
 
   ngOnInit() {
@@ -80,7 +78,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // Ajusta si la ruta en tu JSON es diferente.
     const lat = this.adsResult?.data?.latitude;
     // Manejar tanto 'longitude' como 'longitud' para mayor robustez
-    const lon = this.adsResult?.data?.longitude ?? this.adsResult?.data?.longitud;
+    const lon = this.adsResult?.data?.longitude;
 
     console.log("Coordenadas recibidas:", lat, lon);
     if (this.hasValidCoordinates) {
@@ -107,13 +105,24 @@ export class AppComponent implements OnInit, OnDestroy {
       console.error('Error: mapContainer no está disponible. Asegúrate de que el *ngIf haya renderizado el elemento.');
       return;
     }
-    
+
     const L = await import('leaflet');
+    const iconDefault = L.icon({
+      iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+      iconUrl: 'assets/leaflet/marker-icon.png',
+      shadowUrl: 'assets/leaflet/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
+    });
+    L.Marker.prototype.options.icon = iconDefault;
     try {
       // Asignamos la instancia del mapa a this.map
       this.map = L.map(this.mapContainer.nativeElement).setView([lat, lon], 13);
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(this.map);

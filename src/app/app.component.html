@@ -10,7 +10,7 @@
 
   <!-- <div alva-ad-id="AE_AD_1773849201147" alva-ad-width="250" alva-ad-height="250" alva-ad-intrusive="true" alva-ad-interval="6" alva-ad-duration="6" ></div> -->
 
-  <h1 style="color: #1f6952">Test ADs ALVA</h1>
+  <!-- <h1 style="color: #1f6952">Test ADs ALVA</h1>
   <h3>Resultado de Ads Capturado</h3>
 
   <div
@@ -25,17 +25,45 @@
     <h3>Respuesta del Servidor:</h3>
     <pre>{{ adsResult | json }}</pre>
  
-    <!-- Mapa para mostrar la ubicación del data -->
     <div *ngIf="hasValidCoordinates" style="margin-top: 20px;">
       <h3>Ubicación en maps</h3>
       <div #mapContainer id="map" style="height: 400px; width: 100%; border-radius: 8px;"></div>
     </div>
 
+  </div> -->
+<h1 style="color: #1f6952">Test ADs ALVA</h1>
+  <div
+    class="container"
+    style="
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    "
+  >
+    <h3>Resultado de Ads</h3>
+
+    <div
+      [hidden]="!hasValidCoordinates"
+      #mapContainer
+      style="
+        height: 400px;
+        width: 100%;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+      "
+    ></div>
+
+    <div *ngIf="!hasValidCoordinates">
+      <p style="color: gray">
+        Esperando datos de ubicación válidos para mostrar el mapa...
+      </p>
+    </div>
+
+    <pre *ngIf="adsResult">{{ adsResult | json }}</pre>
   </div>
 
   <ng-template #noData>
     <p style="color: gray">Esperando respuesta del script de ads...</p>
   </ng-template>
-
-
 </div>
