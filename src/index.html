@@ -1,13 +1,93 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>TestAds</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>TestAds</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    
+    <!-- <script>
+  (function(i,s,o,g,r,a,m){
+      i['AnalyticsObject']=r;
+      i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();
+      a=s.createElement(o), m=s.getElementsByTagName(o)[0];
+      a.async=1; a.src=g; m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://helios-ads-backoffice-dev-core.ssidevops.com/scripts/heliospx.js?3-63A6FD1A-9C16-4B08-9CC5-62B3853A9B2F','trackEvent');
+  </script> -->
+    <script>
+      (function () {
+        const { fetch: originalFetch } = window;
+        window.fetch = async (...args) => {
+          const response = await originalFetch(...args);
+          if (
+            typeof args[0] === "string" &&
+            args[0].includes("helios-ads-backoffice")
+          ) {
+            const clone = response.clone();
+            clone
+              .json()
+              .then((data) => {
+                window.dispatchEvent(
+                  new CustomEvent("adsDataCaptured", { detail: data }),
+                );
+              })
+              .catch((err) =>
+                console.error("Error parseando interceptor:", err),
+              );
+          }
+          return response;
+        };
+      })();
+    </script>
+    <script>
+      (function () {
+        var customId = "AECB036F-57D7-4B13-8CBB-BDD8803A1CE3";
+        window.customParam = window.customParam || [];
+        if (Array.isArray(window.customParam)) {
+          window.customParam.push(customId);
+        } else {
+          window.customParam = [customId];
+        }
+        (function (i, s, o, g, r, a, m) {
+          i["AnalyticsObject"] = r;
+          ((i[r] =
+            i[r] ||
+            function () {
+              (i[r].q = i[r].q || []).push(arguments);
+            }),
+            (i[r].l = 1 * new Date()));
+          ((a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]));
+          a.async = 1;
+          a.src = g;
+          m.parentNode.insertBefore(a, m);
+        })(
+          window,
+          document,
+          "script",
+          "https://helios-ads-backoffice-qa-core.ssidevops.com/scripts/ads.js?AECB036F-57D7-4B13-8CBB-BDD8803A1CE3",
+          "trackEvent",
+        );
+      })();
+    </script>
+
+    <!-- <script>
+   (function() {var customId = '8CBEACE1-86B7-4AC2-A117-ACD54246093B';
+    window.customParam = window.customParam || [];
+    if (Array.isArray(window.customParam)) {window.customParam.push(customId);
+    }else{window.customParam = [customId];}
+  (function(i,s,o,g,r,a,m){
+      i['AnalyticsObject']=r;
+      i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();
+      a=s.createElement(o), m=s.getElementsByTagName(o)[0];
+      a.async=1; a.src=g; m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://helios-ads-backoffice-core.oyealva.com/scripts/ads.js?8CBEACE1-86B7-4AC2-A117-ACD54246093B','trackEvent');
+    })();
+  </script> -->
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
 </html>

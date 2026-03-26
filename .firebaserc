@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "test-ads-publisher"
+  },
+  "targets": {
+    "test-ads-publisher": {
+      "hosting": {
+        "test-ads-target": [
+          "test-ads-publisher"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
